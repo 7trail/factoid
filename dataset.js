@@ -296,7 +296,6 @@ var dataset = [
     {"fact": "The population of Canada is smaller than that of California, despite Canada's massive landmass.", "topic": "geography"},
     {"fact": "Certain types of bamboo can grow up to three feet in a single day.", "topic": "nature"},
     {"fact": "Shakespeare didn't invent many of the words and phrases attributed to him, but popularized many already in use, cementing their place in English.", "topic": "literature"},
-    {"fact": "The song 'Happy Birthday to You' is protected by copyright, meaning usage without licensing involves financial risk.", "topic": "music"},
     {"fact": "The 'Mona Lisa' smile has been interpreted in numerous ways through the centuries. There is not universal agreement on the actual meaning.", "topic": "art"},
     {"fact": "There are more trees on Earth than stars in the Milky Way galaxy.", "topic": "nature"},
     {"fact": "The ancient city of Pompeii was famously destroyed by Mount Vesuvius in a single day in 79 AD.", "topic": "history"},
