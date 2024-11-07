@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="dataset.js"></script>
+    <script src="swiped-events.min.js" ></script>
+    <script type="importmap">
+        {
+          "imports": {
+            "@google/generative-ai": "https://esm.run/@google/generative-ai"
+          }
+        }
+      </script>
+    <title>Fact Finder</title>
+    <style>
+        body {
+            background-color: #eeeeee;
+        }
+
+        @keyframes onHoverAnimation {
+            0% {
+                background-color: #cccccc;  
+                top: 30vh;
+            }
+            50% {
+                background-color: rgb(173, 185, 255);   
+            }
+            100% {
+                top: 0vh;
+                background-color: rgb(173, 185, 255)
+            }
+        }
+
+        @keyframes horizontalSwipe {
+            0% {
+                left: 0vw;
+            }
+            50% {
+                left: -110vw;
+            }
+            50.1% {
+                left: 110vw;
+            }
+            100% {
+                left: 0vw;
+            }
+        }
+
+        #swipeDiv {
+            animation-duration: 0.4s; /* same as transition duration */
+            animation-timing-function: ease-out; /* kind of same as transition timing */
+            animation-delay: 0ms; /* same as transition delay */
+            animation-iteration-count: 1; /* set to 2 to make it run twice, or Infinite to run forever!*/
+            animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
+            animation-fill-mode: none; /* can be used to retain keyframe styling after animation, with "forwards" */
+            animation-play-state: running; /* can be set dynamically to pause mid animation*/
+        }
+
+        #factBody {
+            display:block;
+            margin:auto;
+
+            top: 30vh;
+
+            background-color: #cccccc;
+            border-radius: 15px;
+            width: 50%;
+            min-height: 50vh;
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            animation-duration: 0.3s; /* same as transition duration */
+            animation-timing-function: ease-out; /* kind of same as transition timing */
+            animation-delay: 0ms; /* same as transition delay */
+            animation-iteration-count: 1; /* set to 2 to make it run twice, or Infinite to run forever!*/
+            animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
+            animation-fill-mode: forwards; /* can be used to retain keyframe styling after animation, with "forwards" */
+            animation-play-state: running; /* can be set dynamically to pause mid animation*/
+        }
+
+        .detailColor {
+            animation-name: onHoverAnimation;
+        }
+
+        .horizontalSwipe {
+            position: relative;
+            animation-name: horizontalSwipe;
+        }
+
+        button {
+            text-align: center;
+            display:block;
+            margin: 10px auto ;
+            font-size: 20px;
+        }
+
+        .factText {
+            text-align: center;
+            padding: 15px;
+        }
+
+        #explainText {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .desktopOnly {
+            display: flex;
+            flex-direction: row;
+            width: 50vw;
+            margin: auto;
+            align-items: center;
+        }
+
+        @media screen and (max-width: 600px) {
+            h2.factText {
+                display: none;
+            }
+
+            #factBody {
+                height: auto;
+                position: relative;
+            }
+
+            #factBody {
+                width: 95vw;
+                min-height: 95vw;
+            }
+            button {
+                display:none;
+            }
+        }
+
+        @media screen and (min-width: 600px) {
+            h3.factText {
+                display: none;
+            }
+        }
+
+        
+
+    </style>
+</head>
+<body>
+    <script type="module">
+        import { HarmBlockThreshold, HarmCategory, GoogleGenerativeAI } from "@google/generative-ai";
+
+        let api_keys = [
+            "V3JpdHRlbiBieSBBdXN0aW4gUGhpbGxpcHMgQXVnLVNlcCAyMDI0",
+            "AIzaSyD9xMiW0oSglYPfQh95Rn0TRHpjTZFduaE",
+            "VEhJUyBXQVMgTVkgSURFQS4gRmFsbCBvZiAyMDIz",
+            "QWRkaXRpb25hbCBMaWJyYXJpZXMgTGljZW5zZXMgaW5jbHVkZWQ="
+        ];
+
+        const API_KEY = api_keys[1];
+
+        // Access your API key (see "Set up your API key" above)
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        
+        const safetySettings = [
+            {
+            category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+            category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+            category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+            {
+            category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+            threshold: HarmBlockThreshold.BLOCK_NONE,
+            },
+        ];
+
+        const modelId="gemini-1.5-flash-002";
+        var model = genAI.getGenerativeModel({ model: modelId, systemInstruction: `Your job is provide deeper information on what you are provided. You write a detailed paragraph in a formal but easy to understand tone.`, safetySettings});
+
+        let myDataset = dataset;
+        let d = {"random":5};
+        let topicWeight = {
+            "random": 2,
+            "food": 0,
+            "computers": 0,
+            "humor": 0,
+            "history": 0,
+            "nature": 0,
+            "animals": 0,
+            "literature": 0,
+            "music": 0,
+            "art": 0,
+            "geography": 0,
+            "psychology": 0,
+            "philosophy": 0,
+            "mythology": 0,
+            "language": 0,
+            "fashion": 0,
+            "business": 0,
+            "politics": 0,
+            "education": 0,
+            "health & wellness": 0,
+            "travel": 0,
+            "space": 0,
+            "science": 0,
+            "engineering": 0,
+            "sports": 0,
+            "religion": 0,
+            "mathematics": 0,
+            "oddities": 0
+        };
+        let topics = ["food","computers","humor","history","nature","animals","literature","music","art","geography","psychology","philosophy","mythology","language","fashion","business","politics","education","health & wellness","travel","space","science","engineering","sports","religion","mathematics","oddities"];
+        
+        /*for (let f of dataset) {
+            if (!Object.keys(d).includes(f["topic"])) {
+                d[f["topic"]] = 0;
+            }
+            d[f["topic"]] += 1;
+        }
+        console.log(d);*/
+
+        let stillOnSlide = false;
+        let currentTopic = null;
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        async function writeDetails(topic) {
+            if (stillOnSlide) {
+                return;
+            }
+
+            topicWeight[currentTopic["topic"]] += 1;
+            document.getElementById("factBody").classList.add("detailColor");
+
+            stillOnSlide = true;
+            let prompt = `Write a paragraph explaining the below:\n\n${topic}`;
+            const result = await model.generateContentStream(prompt);
+            let contents = "";
+            let charCount = 0;
+            // Print text as it comes in. This is a deviation from the standard function.
+            for await (const chunk of result.stream) {
+                const chunkText = chunk.text();
+                contents += chunkText;
+                for (let character of chunkText) {
+                    if (stillOnSlide) {
+                        document.getElementById("explainText").textContent += character;
+                        if (charCount % 5 == 0) {
+                            await sleep(10);
+                        }
+                        charCount += 1;
+                    }
+                }
+            }
+        }
+
+        function weightedRand(spec) {
+            var i, j, table=[];
+            for (i in spec) {
+                // The constant 10 below should be computed based on the
+                // weights in the spec for a correct and optimal table size.
+                // E.g. the spec {0:0.999, 1:0.001} will break this impl.
+                for (j=0; j<spec[i]*10; j++) {
+                table.push(i);
+                }
+            }
+            return function() {
+                return table[Math.floor(Math.random() * table.length)];
+            }
+        }
+
+        function getFactByTopic(topic) {
+            console.log(topic);
+            let topicsToChooseFrom = [];
+            for (let f of myDataset) {
+                if (f["topic"] == topic) {
+                    topicsToChooseFrom.push(f);
+                }
+            }
+            console.log(topicsToChooseFrom);
+            return topicsToChooseFrom[Math.floor(Math.random() * topicsToChooseFrom.length)];
+        }
+
+        function selectFact() {
+            if (dataset.length == 0) {
+                return;
+            }
+            let topic = weightedRand(topicWeight)();
+            if (topic == "random") {
+                topic = topics[Math.floor(Math.random() * topics.length)];
+            }
+            let fact = getFactByTopic(topic);
+            console.log(fact);
+            
+            for (let element of document.querySelectorAll(".factText")) {
+                element.textContent = fact["fact"];
+            }
+            dataset.splice(dataset.indexOf(fact), 1);
+            currentTopic = fact;
+            stillOnSlide = false;
+            document.getElementById("explainText").textContent = "";
+            document.getElementById("factBody").classList.remove("detailColor");
+        }
+
+        window.addEventListener("load", function() {
+            selectFact();
+            document.getElementById("factButton").addEventListener("click", function() {
+                selectFact();
+            });
+            document.getElementById("learnMoreButton").addEventListener("click", function() {
+                writeDetails(currentTopic["fact"]);
+            });
+        });
+        
+        document.addEventListener('swiped', function(e) {
+			console.log(e.target); // the element that was swiped
+			//console.log(e.detail.dir);
+			if (e.detail.dir == "left") {
+                if (window.screen.width <= 600) {
+                    async function thisFunc() {
+                        document.getElementById("swipeDiv").classList.add("horizontalSwipe");
+                        //await sleep(100);
+                        await sleep(200);
+                        document.getElementById("factBody").classList.remove("detailColor");
+                        selectFact();
+                        await sleep(500);
+                        document.getElementById("swipeDiv").classList.remove("horizontalSwipe");
+                    }
+                    thisFunc();
+                }
+                else {
+                    selectFact();
+                }
+            }
+            if (e.detail.dir == "up") {
+                writeDetails(currentTopic["fact"]);
+            }
+		});
+    </script>
+
+    <div id="swipeDiv">
+        <div id="factBody">
+            <h2 class="factText"></h2>
+            <h3 class="factText"></h2>
+            <p id="explainText"></p>
+            
+            
+        </div>
+    </div>
+    <div class="desktopOnly">
+        <button id="factButton">Next Fact</button>
+        <button id="learnMoreButton">Learn More</button>
+    </div>
+</body>
+</html>
