@@ -24,11 +24,12 @@
                 top: 30vh;
             }
             50% {
-                background-color: rgb(173, 185, 255);   
+                background-color: rgb(214, 220, 255);   
             }
             100% {
                 top: 0vh;
-                background-color: rgb(173, 185, 255)
+                background-color: rgb(214, 220, 255);
+                box-shadow: 0px -5px 30px rgb(164,170,205);
             }
         }
 
@@ -221,6 +222,7 @@
         console.log(d);*/
 
         let stillOnSlide = false;
+        let isSwiping = false;
         let currentTopic = null;
         const sleep = ms => new Promise(r => setTimeout(r, ms));
         async function writeDetails(topic) {
@@ -315,6 +317,10 @@
 			//console.log(e.detail.dir);
 			if (e.detail.dir == "left") {
                 if (window.screen.width <= 600) {
+                    if (isSwiping) {
+                        return;
+                    }
+                    isSwiping = true;
                     async function thisFunc() {
                         document.getElementById("swipeDiv").classList.add("horizontalSwipe");
                         //await sleep(100);
@@ -323,6 +329,7 @@
                         selectFact();
                         await sleep(500);
                         document.getElementById("swipeDiv").classList.remove("horizontalSwipe");
+                        isSwiping = false;
                     }
                     thisFunc();
                 }
@@ -331,7 +338,9 @@
                 }
             }
             if (e.detail.dir == "up") {
-                writeDetails(currentTopic["fact"]);
+                if (!(isSwiping) || window.screen.width > 600) {
+                    writeDetails(currentTopic["fact"]);
+                }
             }
 		});
     </script>
