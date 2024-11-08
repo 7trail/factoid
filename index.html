@@ -13,133 +13,7 @@
         }
       </script>
     <title>Fact Finder</title>
-    <style>
-        body {
-            background-color: #eeeeee;
-        }
-
-        @keyframes onHoverAnimation {
-            0% {
-                background-color: #cccccc;  
-                top: 30vh;
-            }
-            50% {
-                background-color: rgb(214, 220, 255);   
-            }
-            100% {
-                top: 0vh;
-                background-color: rgb(214, 220, 255);
-                box-shadow: 0px -5px 30px rgb(164,170,205);
-            }
-        }
-
-        @keyframes horizontalSwipe {
-            0% {
-                left: 0vw;
-            }
-            50% {
-                left: -110vw;
-            }
-            50.1% {
-                left: 110vw;
-            }
-            100% {
-                left: 0vw;
-            }
-        }
-
-        #swipeDiv {
-            animation-duration: 0.4s; /* same as transition duration */
-            animation-timing-function: ease-out; /* kind of same as transition timing */
-            animation-delay: 0ms; /* same as transition delay */
-            animation-iteration-count: 1; /* set to 2 to make it run twice, or Infinite to run forever!*/
-            animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
-            animation-fill-mode: none; /* can be used to retain keyframe styling after animation, with "forwards" */
-            animation-play-state: running; /* can be set dynamically to pause mid animation*/
-        }
-
-        #factBody {
-            display:block;
-            margin:auto;
-
-            top: 30vh;
-
-            background-color: #cccccc;
-            border-radius: 15px;
-            width: 50%;
-            min-height: 50vh;
-            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            animation-duration: 0.3s; /* same as transition duration */
-            animation-timing-function: ease-out; /* kind of same as transition timing */
-            animation-delay: 0ms; /* same as transition delay */
-            animation-iteration-count: 1; /* set to 2 to make it run twice, or Infinite to run forever!*/
-            animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
-            animation-fill-mode: forwards; /* can be used to retain keyframe styling after animation, with "forwards" */
-            animation-play-state: running; /* can be set dynamically to pause mid animation*/
-        }
-
-        .detailColor {
-            animation-name: onHoverAnimation;
-        }
-
-        .horizontalSwipe {
-            position: relative;
-            animation-name: horizontalSwipe;
-        }
-
-        button {
-            text-align: center;
-            display:block;
-            margin: 10px auto ;
-            font-size: 20px;
-        }
-
-        .factText {
-            text-align: center;
-            padding: 15px;
-        }
-
-        #explainText {
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        .desktopOnly {
-            display: flex;
-            flex-direction: row;
-            width: 50vw;
-            margin: auto;
-            align-items: center;
-        }
-
-        @media screen and (max-width: 600px) {
-            h2.factText {
-                display: none;
-            }
-
-            #factBody {
-                height: auto;
-                position: relative;
-            }
-
-            #factBody {
-                width: 95vw;
-                min-height: 95vw;
-            }
-            button {
-                display:none;
-            }
-        }
-
-        @media screen and (min-width: 600px) {
-            h3.factText {
-                display: none;
-            }
-        }
-
-        
-
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <script type="module">
@@ -213,6 +87,29 @@
         };
         let topics = ["food","computers","humor","history","nature","animals","literature","music","art","geography","psychology","philosophy","mythology","language","fashion","business","politics","education","health & wellness","travel","space","science","engineering","sports","religion","mathematics","oddities"];
         
+        if (localStorage.getItem("weights")) {
+            topicWeight = JSON.parse(localStorage.getItem("weights"));
+            console.log("Weights:");
+            console.log(topicWeight);
+        }
+
+        for (let f of dataset) {
+            if (!Object.keys(d).includes(f["topic"])) {
+                d[f["topic"]] = 0;
+            }
+
+            if (!Object.keys(topicWeight).includes(f["topic"])) {
+                topicWeight[f["topic"]] = 0; //Ensures that all topics are represented by the topicWeight object
+            }
+            d[f["topic"]] += 1;
+        }
+
+        function saveTopicWeights() {
+            localStorage.setItem("weights",JSON.stringify(topicWeight));
+        }
+
+        saveTopicWeights();
+
         /*for (let f of dataset) {
             if (!Object.keys(d).includes(f["topic"])) {
                 d[f["topic"]] = 0;
@@ -231,6 +128,7 @@
             }
 
             topicWeight[currentTopic["topic"]] += 1;
+            saveTopicWeights();
             document.getElementById("factBody").classList.add("detailColor");
 
             stillOnSlide = true;
@@ -269,27 +167,44 @@
             }
         }
 
-        function getFactByTopic(topic) {
-            console.log(topic);
+        function getFactsByTopic(topic) {
             let topicsToChooseFrom = [];
             for (let f of myDataset) {
                 if (f["topic"] == topic) {
                     topicsToChooseFrom.push(f);
                 }
             }
-            console.log(topicsToChooseFrom);
-            return topicsToChooseFrom[Math.floor(Math.random() * topicsToChooseFrom.length)];
+            return topicsToChooseFrom;
         }
 
-        function selectFact() {
+        function getFactByTopic(topic) {
+            console.log(topic);
+            let topicsToChooseFrom = getFactsByTopic(topic);
+            
+            if (topicsToChooseFrom.length > 0) {
+                return topicsToChooseFrom[Math.floor(Math.random() * topicsToChooseFrom.length)];
+            }
+            topicWeight[topic]=0;
+            return dataset[Math.floor(Math.random() * dataset.length)]; // Gets a totally random fact if the chosen weighted category is empty
+        }
+
+        function getRandomTopic() {
+            return topics[Math.floor(Math.random() * topics.length)];
+        }
+
+        function selectFact(chosenFact) {
             if (dataset.length == 0) {
                 return;
             }
             let topic = weightedRand(topicWeight)();
-            if (topic == "random") {
-                topic = topics[Math.floor(Math.random() * topics.length)];
+            if (topic == "random" || Math.random() < 0.15) {
+                topic = getRandomTopic();
             }
+
             let fact = getFactByTopic(topic);
+            if (chosenFact) {
+                fact = chosenFact;
+            }
             console.log(fact);
             
             for (let element of document.querySelectorAll(".factText")) {
@@ -300,6 +215,37 @@
             stillOnSlide = false;
             document.getElementById("explainText").textContent = "";
             document.getElementById("factBody").classList.remove("detailColor");
+        }
+
+        function shuffle(array) {
+            let currentIndex = array.length;
+
+            // While there remain elements to shuffle...
+            while (currentIndex != 0) {
+
+                // Pick a remaining element...
+                let randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+
+                // And swap it with the current element.
+                [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex], array[currentIndex]];
+            }
+        }
+
+        async function swipeToFact(f) {
+            document.getElementById("swipeDiv").classList.add("horizontalSwipe");
+            //await sleep(100);
+            await sleep(110);
+            document.getElementById("factBody").classList.remove("detailColor");
+            let addedFacts = document.getElementById("addedFacts");
+            while (addedFacts.firstChild) {
+                addedFacts.removeChild(addedFacts.firstChild);
+            }
+            selectFact(f);
+            await sleep(500);
+            document.getElementById("swipeDiv").classList.remove("horizontalSwipe");
+            isSwiping = false;
         }
 
         window.addEventListener("load", function() {
@@ -321,17 +267,8 @@
                         return;
                     }
                     isSwiping = true;
-                    async function thisFunc() {
-                        document.getElementById("swipeDiv").classList.add("horizontalSwipe");
-                        //await sleep(100);
-                        await sleep(200);
-                        document.getElementById("factBody").classList.remove("detailColor");
-                        selectFact();
-                        await sleep(500);
-                        document.getElementById("swipeDiv").classList.remove("horizontalSwipe");
-                        isSwiping = false;
-                    }
-                    thisFunc();
+                    
+                    swipeToFact();
                 }
                 else {
                     selectFact();
@@ -339,7 +276,36 @@
             }
             if (e.detail.dir == "up") {
                 if (!(isSwiping) || window.screen.width > 600) {
-                    writeDetails(currentTopic["fact"]);
+                    if (!stillOnSlide) {
+                        async function writeMobileDetails() {
+                            await writeDetails(currentTopic["fact"]);
+                            let facts = getFactsByTopic(currentTopic["topic"]);
+                            let addedFacts = document.getElementById("addedFacts");
+                            if (facts.length > 0) {
+                                
+                                let headerText = document.createElement("h3");
+                                headerText.style.textAlign = "center";
+                                headerText.textContent = "Suggested";
+                                addedFacts.appendChild(headerText);
+                                shuffle(facts);
+                            }
+                            for (let i = 0; i < Math.min(10, facts.length); i++) {
+                                let newElement = document.createElement("div");
+                                newElement.classList.add("suggestedFact");
+                                let newFactHeader = document.createElement("h4");
+                                newFactHeader.textContent = facts[i]["fact"];
+                                newElement.appendChild(newFactHeader);
+
+                                addedFacts.appendChild(newElement);
+                                newElement.addEventListener("click", function() {
+                                    newElement.style.backgroundColor = "#faa7a7";
+                                    swipeToFact(facts[i]);
+                                })
+                            }
+                        }
+                        writeMobileDetails();
+
+                    }
                 }
             }
 		});
@@ -352,6 +318,9 @@
             <p id="explainText"></p>
             
             
+        </div>
+        <div id="addedFacts">
+
         </div>
     </div>
     <div class="desktopOnly">

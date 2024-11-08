@@ -1,0 +1,139 @@
+body {
+    background-color: #eeeeee;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes onHoverAnimation {
+    0% {
+        background-color: #cccccc;  
+        top: 30vh;
+    }
+    50% {
+        background-color: rgb(214, 220, 255);   
+    }
+    100% {
+        top: 0vh;
+        background-color: rgb(214, 220, 255);
+        box-shadow: 0px -5px 30px rgb(164,170,205);
+    }
+}
+
+@keyframes horizontalSwipe {
+    0% {
+        left: 0vw;
+    }
+    50% {
+        left: -110vw;
+    }
+    50.1% {
+        left: 110vw;
+    }
+    100% {
+        left: 0vw;
+    }
+}
+
+#swipeDiv {
+    animation-duration: 0.4s; /* same as transition duration */
+    animation-timing-function: cubic-bezier(.1,.8,.23,.92); /* kind of same as transition timing */
+    animation-delay: 0ms; /* same as transition delay */
+    animation-iteration-count: 1; /* set to 2 to make it run twice, or Infinite to run forever!*/
+    animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
+    animation-fill-mode: none; /* can be used to retain keyframe styling after animation, with "forwards" */
+    animation-play-state: running; /* can be set dynamically to pause mid animation*/
+}
+
+#factBody {
+    display:block;
+    margin:auto;
+
+    top: 30vh;
+
+    background-color: #cccccc;
+    border-radius: 15px;
+    width: 50%;
+    min-height: 50vh;
+    
+    animation-duration: 0.3s; /* same as transition duration */
+    animation-timing-function: cubic-bezier(.24,.74,.3,.78); /* kind of same as transition timing */
+    animation-delay: 0ms; /* same as transition delay */
+    animation-iteration-count: 1; /* set to 2 to make it run twice, or Infinite to run forever!*/
+    animation-direction: normal; /* can be set to "alternate" to run animation, then run it backwards.*/
+    animation-fill-mode: forwards; /* can be used to retain keyframe styling after animation, with "forwards" */
+    animation-play-state: running; /* can be set dynamically to pause mid animation*/
+}
+
+.suggestedFact {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display:block;
+    margin:auto;
+    background-color: #cccccc;
+    border-radius: 15px;
+    width: 95vw;
+    min-height: 20vh;
+}
+
+.suggestedFact h4 {
+    text-align: center;
+    padding: 15px;
+}
+
+.detailColor {
+    animation-name: onHoverAnimation;
+}
+
+.horizontalSwipe {
+    position: relative;
+    animation-name: horizontalSwipe;
+}
+
+button {
+    text-align: center;
+    display:block;
+    margin: 10px auto ;
+    font-size: 20px;
+}
+
+.factText {
+    text-align: center;
+    padding: 15px;
+}
+
+#explainText {
+    padding: 10px;
+    font-size: 16px;
+}
+
+.desktopOnly {
+    display: flex;
+    flex-direction: row;
+    width: 50vw;
+    margin: auto;
+    align-items: center;
+}
+
+@media screen and (max-width: 600px) {
+    h2.factText {
+        display: none;
+    }
+
+    #factBody {
+        height: auto;
+        position: relative;
+    }
+
+    #factBody {
+        width: 95vw;
+        min-height: 95vw;
+    }
+    button {
+        display:none;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    h3.factText {
+        display: none;
+    }
+}
