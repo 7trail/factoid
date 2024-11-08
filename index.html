@@ -59,6 +59,7 @@
             "random": 2,
             "food": 0,
             "computers": 0,
+            "architecture": 0,
             "humor": 0,
             "history": 0,
             "nature": 0,
@@ -74,6 +75,7 @@
             "fashion": 0,
             "business": 0,
             "politics": 0,
+            "programming":0,
             "education": 0,
             "health & wellness": 0,
             "travel": 0,
@@ -109,14 +111,7 @@
         }
 
         saveTopicWeights();
-
-        /*for (let f of dataset) {
-            if (!Object.keys(d).includes(f["topic"])) {
-                d[f["topic"]] = 0;
-            }
-            d[f["topic"]] += 1;
-        }
-        console.log(d);*/
+        console.log(d);
 
         let stillOnSlide = false;
         let isSwiping = false;
