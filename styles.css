@@ -1,6 +1,8 @@
 body {
+    margin: 0;
     background-color: #eeeeee;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display:block;
 }
 
 @keyframes onHoverAnimation {
@@ -10,6 +12,36 @@ body {
     }
     50% {
         background-color: rgb(214, 220, 255);   
+    }
+    100% {
+        top: 0vh;
+        background-color: rgb(214, 220, 255);
+        box-shadow: 0px -5px 30px rgb(164,170,205);
+    }
+}
+
+@keyframes likeAnimation {
+    0% {
+        background-color: #cccccc;
+    }
+    50% {
+        background-color: #ff0000;
+    }
+    100% {
+        background-color: #cccccc;
+    }
+}
+
+@keyframes likeAnimation2 {
+    0% {
+        top: 0vh;
+        background-color: rgb(214, 220, 255);
+        box-shadow: 0px -5px 30px rgb(164,170,205);
+    }
+    50% {
+        top: 0vh;
+        background-color: #ff0000;
+        box-shadow: 0px -5px 45px #ff0000;
     }
     100% {
         top: 0vh;
@@ -33,6 +65,21 @@ body {
     }
 }
 
+#headerBar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: #444444;
+    z-index: 3;
+    width: 100vw;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0px 0px 30px #444444;
+}
+
 #swipeDiv {
     animation-duration: 0.4s; /* same as transition duration */
     animation-timing-function: cubic-bezier(.1,.8,.23,.92); /* kind of same as transition timing */
@@ -46,9 +93,7 @@ body {
 #factBody {
     display:block;
     margin:auto;
-
     top: 30vh;
-
     background-color: #cccccc;
     border-radius: 15px;
     width: 50%;
@@ -70,7 +115,7 @@ body {
     margin:auto;
     background-color: #cccccc;
     border-radius: 15px;
-    width: 95vw;
+    width: 45vw;
     min-height: 20vh;
 }
 
@@ -88,11 +133,40 @@ body {
     animation-name: horizontalSwipe;
 }
 
-button {
+.likeAnimation {
+    animation-name: likeAnimation;
+}
+
+.likeAnimation2 {
+    animation-name: likeAnimation2;
+}
+
+.desktopOnly button {
     text-align: center;
-    display:block;
-    margin: 10px auto ;
+    display: block;
+    margin: 10px auto;
     font-size: 20px;
+    background-color: #b4b4ff;
+    border: 2px solid blue;
+    border-radius: 10px;
+    padding: 10px 35px;
+}
+
+#headerBar button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #8c8cff;
+}
+
+button:active {
+    background-color: rgb(72, 72, 255);
+    color: white;
 }
 
 .factText {
@@ -100,9 +174,21 @@ button {
     padding: 15px;
 }
 
+#titleText {
+    margin-bottom: 0;
+    margin-top: 2px;
+    font-size: 2em;
+    background: linear-gradient(#eee, #ff7a9b);
+    margin-left: 15px;
+    margin-right: 15px;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 #explainText {
     padding: 10px;
     font-size: 16px;
+    text-align: justify;
 }
 
 .desktopOnly {
@@ -112,6 +198,7 @@ button {
     margin: auto;
     align-items: center;
 }
+  
 
 @media screen and (max-width: 600px) {
     h2.factText {
@@ -127,13 +214,21 @@ button {
         width: 95vw;
         min-height: 95vw;
     }
-    button {
+    .desktopOnly button {
         display:none;
+    }
+
+    .suggestedFact {
+        width: 85vw;
     }
 }
 
 @media screen and (min-width: 600px) {
     h3.factText {
         display: none;
+    }
+
+    #headerBar {
+        justify-content: space-around;
     }
 }

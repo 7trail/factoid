@@ -55,6 +55,7 @@
 
         let myDataset = dataset;
         let d = {"random":5};
+        let viewed = [];
         let topicWeight = {
             "random": 2,
             "food": 0,
@@ -94,10 +95,20 @@
             console.log("Weights:");
             console.log(topicWeight);
         }
+        if (localStorage.getItem("viewed")) {
+            viewed = JSON.parse(localStorage.getItem("viewed"));
+            console.log("Viewed:");
+            console.log(viewed);
+        }
 
+        let toRemove = [];
         for (let f of dataset) {
             if (!Object.keys(d).includes(f["topic"])) {
                 d[f["topic"]] = 0;
+            }
+
+            if (viewed.includes(f["id"])) {
+                toRemove.push(f);
             }
 
             if (!Object.keys(topicWeight).includes(f["topic"])) {
@@ -106,11 +117,21 @@
             d[f["topic"]] += 1;
         }
 
+        //Remove all viewed elements from the dataset
+        for (let f of toRemove) {
+            dataset.splice(dataset.indexOf(f), 1);
+        }
+
+        function saveViewed() {
+            localStorage.setItem("viewed",JSON.stringify(viewed));
+        }
+
         function saveTopicWeights() {
             localStorage.setItem("weights",JSON.stringify(topicWeight));
         }
 
         saveTopicWeights();
+        saveViewed();
         console.log(d);
 
         let stillOnSlide = false;
@@ -183,6 +204,15 @@
             return dataset[Math.floor(Math.random() * dataset.length)]; // Gets a totally random fact if the chosen weighted category is empty
         }
 
+        function getFactByID(id) {
+            for (let f of dataset) {
+                if (f["id"] == id) {
+                    return f;
+                }
+            }
+            return null;
+        }
+
         function getRandomTopic() {
             return topics[Math.floor(Math.random() * topics.length)];
         }
@@ -206,6 +236,8 @@
                 element.textContent = fact["fact"];
             }
             dataset.splice(dataset.indexOf(fact), 1);
+            viewed.push(fact["id"]);
+            saveViewed();
             currentTopic = fact;
             stillOnSlide = false;
             document.getElementById("explainText").textContent = "";
@@ -228,15 +260,56 @@
             }
         }
 
+        function createSuggested() {
+            let facts = getFactsByTopic(currentTopic["topic"]);
+            let addedFacts = document.getElementById("addedFacts");
+            if (facts.length > 0) {
+                
+                let headerText = document.createElement("h3");
+                headerText.style.textAlign = "center";
+                headerText.textContent = "Suggested";
+                addedFacts.appendChild(headerText);
+                shuffle(facts);
+            }
+            for (let i = 0; i < Math.min(10, facts.length); i++) {
+                let newElement = document.createElement("div");
+                newElement.classList.add("suggestedFact");
+                let newFactHeader = document.createElement("h4");
+                newFactHeader.textContent = facts[i]["fact"];
+                newElement.appendChild(newFactHeader);
+
+                addedFacts.appendChild(newElement);
+                newElement.addEventListener("click", function() {
+                    newElement.style.backgroundColor = "#faa7a7";
+                    if (window.screen.width<=600) {
+                        swipeToFact(facts[i]);
+                    }
+                    else {
+                        async function delayedClick() {
+                            await sleep(50);
+                            selectFact(facts[i]);
+                            clearSuggestedFacts();
+
+                        }
+                        delayedClick();
+                    }
+                })
+            }
+        }
+
+        function clearSuggestedFacts() {
+            let addedFacts = document.getElementById("addedFacts");
+            while (addedFacts.firstChild) {
+                addedFacts.removeChild(addedFacts.firstChild);
+            }
+        }
+
         async function swipeToFact(f) {
             document.getElementById("swipeDiv").classList.add("horizontalSwipe");
             //await sleep(100);
             await sleep(110);
             document.getElementById("factBody").classList.remove("detailColor");
-            let addedFacts = document.getElementById("addedFacts");
-            while (addedFacts.firstChild) {
-                addedFacts.removeChild(addedFacts.firstChild);
-            }
+            clearSuggestedFacts();
             selectFact(f);
             await sleep(500);
             document.getElementById("swipeDiv").classList.remove("horizontalSwipe");
@@ -244,14 +317,55 @@
         }
 
         window.addEventListener("load", function() {
-            selectFact();
             document.getElementById("factButton").addEventListener("click", function() {
                 selectFact();
             });
-            document.getElementById("learnMoreButton").addEventListener("click", function() {
-                writeDetails(currentTopic["fact"]);
+            document.getElementById("learnMoreButton").addEventListener("click", async function() {
+                await writeDetails(currentTopic["fact"]);
+                createSuggested();
             });
+            document.getElementById("shareFact").addEventListener("click", shareFact);
+            document.getElementById("clearHistory").addEventListener("click", function() {
+                // Prompt the user to clear history or not
+                if (confirm("Are you sure you want to clear your preferences?")) {
+                    localStorage.clear();
+                    window.location.replace("index.html");
+                }
+            });
+
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
+            let factID = urlParams.get("factID");
+            if (factID) {
+                selectFact(getFactByID(factID));
+            } else {
+                selectFact();
+            }
+            
+
         });
+
+        function shareFact() {
+            let data = "https://7trail.github.io/factoid?factID="+currentTopic["id"];
+            if (navigator.share) {
+                navigator.share(data);
+            } else {
+                navigator.clipboard.writeText(data);
+                alert("Link copied! <3");
+            }
+            
+        }
+
+        /*document.getElementById("factBody").addEventListener("dblclick", async function() {
+            let newClass = "likeAnimation";
+            if (stillOnSlide) {
+                newClass = "likeAnimation2";
+            }
+
+            document.getElementById("factBody").classList.add(newClass);
+            await sleep(400);
+            document.getElementById("factBody").classList.remove(newClass);
+        })*/
         
         document.addEventListener('swiped', function(e) {
 			console.log(e.target); // the element that was swiped
@@ -274,29 +388,7 @@
                     if (!stillOnSlide) {
                         async function writeMobileDetails() {
                             await writeDetails(currentTopic["fact"]);
-                            let facts = getFactsByTopic(currentTopic["topic"]);
-                            let addedFacts = document.getElementById("addedFacts");
-                            if (facts.length > 0) {
-                                
-                                let headerText = document.createElement("h3");
-                                headerText.style.textAlign = "center";
-                                headerText.textContent = "Suggested";
-                                addedFacts.appendChild(headerText);
-                                shuffle(facts);
-                            }
-                            for (let i = 0; i < Math.min(10, facts.length); i++) {
-                                let newElement = document.createElement("div");
-                                newElement.classList.add("suggestedFact");
-                                let newFactHeader = document.createElement("h4");
-                                newFactHeader.textContent = facts[i]["fact"];
-                                newElement.appendChild(newFactHeader);
-
-                                addedFacts.appendChild(newElement);
-                                newElement.addEventListener("click", function() {
-                                    newElement.style.backgroundColor = "#faa7a7";
-                                    swipeToFact(facts[i]);
-                                })
-                            }
+                            createSuggested();
                         }
                         writeMobileDetails();
 
@@ -305,7 +397,13 @@
             }
 		});
     </script>
-
+    <div id="headerBar">
+        <button id="shareFact"><img src="shareIcon.png" height="32" alt="Share message icon" /></button>
+        <div id="titleBg">
+            <h2 id="titleText">Factoid</h2>
+        </div>
+        <button id="clearHistory"><img src="undoIcon.png" height="32" alt="Undo icon" /></button>
+    </div>
     <div id="swipeDiv">
         <div id="factBody">
             <h2 class="factText"></h2>
